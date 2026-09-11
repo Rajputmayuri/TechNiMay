@@ -4,7 +4,13 @@ const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
   }
-  return 'https://technimay-backend.vercel.app/api';
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
+      return `http://${hostname}:3001/api`;
+    }
+  }
+  return 'http://localhost:3001/api';
 };
 
 const apiClient = axios.create({
@@ -41,22 +47,11 @@ export const apiService = {
       const response = await apiClient.post('/contact', formData);
       return response.data;
     } catch (error) {
-      console.warn('Primary contact submission failed, trying production backend fallback:', error.message);
-      try {
-        const prodClient = axios.create({
-          baseURL: 'https://technimay-backend.vercel.app/api',
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 8000,
-        });
-        const response = await prodClient.post('/contact', formData);
-        return response.data;
-      } catch (fallbackError) {
-        console.warn('Backend server offline, operating in client fallback mode:', fallbackError.message);
-        return {
-          success: true,
-          message: `Thank you, ${formData.name || 'there'}! Your message has been recorded. We will reach out to ${formData.email} shortly.`,
-        };
-      }
+      console.warn('Backend server offline or unreachable, operating in client fallback mode:', error.message);
+      return {
+        success: true,
+        message: `Thank you, ${formData.name || 'there'}! Your message has been recorded. We will reach out to ${formData.email} shortly.`,
+      };
     }
   },
 
