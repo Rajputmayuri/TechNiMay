@@ -4,13 +4,7 @@ const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
   }
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
-      return `http://${hostname}:3001/api`;
-    }
-  }
-  return 'http://localhost:3001/api';
+  return 'https://tech-ni-may-1hlq.vercel.app/api';
 };
 
 const apiClient = axios.create({
